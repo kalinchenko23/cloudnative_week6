@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: login
+  labels:
+    app: login
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: login
+  template:
+    metadata:
+      labels:
+        app: login
+    spec:
+      initContainers:
+      - name: db-migrate
+        image: p6acrkalina.azurecr.io/p6_login:v5 # Use the same image as your Django container
+        command: ["/bin/sh", "-c", "python manage.py migrate && python manage.py createsuperuser --no-input --username admin --email testme@test.com || true"]
+        env:
+        - name: DJANGO_SUPERUSER_PASSWORD
+          value: "asdasd"
+      containers:
+      - name: login
+        image: p6acrkalina.azurecr.io/p6_login:v5 # Set ACR Name
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+          - name: PRIVATE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: loginkeys
+                key: private_key.pem
+          - name: PUBLIC_KEY
+            valueFrom:
+              secretKeyRef:
+                name: loginkeys
+                key: public_key.pem

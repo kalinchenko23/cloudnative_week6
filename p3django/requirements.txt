@@ -1,0 +1,4 @@
+djangorestframework-simplejwt[crypto]
+djangorestframework
+Django
+mysqlclient
